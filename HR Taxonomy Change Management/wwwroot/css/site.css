@@ -1,0 +1,159 @@
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-size: 14px;
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+
+.content {
+    background-color: #F3F2F1 !important;
+    padding: 1.1rem 0 1.1rem 0;
+}
+
+.form-div{
+    width:75% !important;
+}
+
+h1:focus {
+    outline: none;
+}
+
+a, .btn-link {
+    color: #0071c1;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.k-column-resizer {
+    border-inline-end: .1em solid lightgray;
+    width: .1em;
+}
+
+.k-grid td.vertical-aligned-cell {
+    border-inline-end: .1em solid lightgray;
+}
+
+.change-grid {
+    border-inline-start: .1em solid lightgray;
+}
+
+/* microsoft coherence formatting */
+
+.main-item-dropshadow {
+    box-shadow: 0px 1.6px 3.6px rgb(0 0 0 / 0.25);
+}
+
+.ms-section-header{
+    margin-bottom: 24px;
+    font-size:28px;
+}
+
+.ms-subsection-header {
+    margin-bottom: 24px;
+    font-size: 20px;
+}
+
+.ms-section{
+    width:100%;
+    margin-bottom:48px !important;
+}
+
+.ms-form-row{
+    margin-bottom:24px !important;
+}
+
+.ms-lock-icon {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.ms-no-lock-icon {
+    display: none !important;
+}
+
+.k-card {
+    margin-bottom: 25px;
+    padding: 25px 50px;
+}
+
+.ms-input{
+    margin-right:24px;
+    width:fit-content;
+}
+
+.k-input:disabled, .k-input[disabled], .k-input.k-disabled {
+    color: black !important;
+    background-color:lightgrey;
+    border:solid;
+    border-width:1px;
+}
+
+.k-label:disabled, .k-label[disabled], .k-label.k-disabled {
+    color:black;
+}
+
+.k-floating-label-container:disabled, .k-floating-label-container[disabled], .k-floating-label-container.k-disabled {
+    color: black !important;
+}
+
+.k-window-titlebar, .k-dialog-titlebar {
+    background-color: #0078D4 !important;
+}
+
+.k-dialog-title {
+    color: white !important;
+}
+
+/* ------------------------------ */
+.stack-label-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column;
+    margin-right: 10px;
+}
+
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
+
+.grid-div {
+    width: 100% !important;
+}

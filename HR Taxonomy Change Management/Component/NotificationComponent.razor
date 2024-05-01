@@ -1,0 +1,36 @@
+﻿
+<TelerikNotification HorizontalPosition=NotificationHorizontalPosition.Center VerticalPosition="NotificationVerticalPosition.Top" @ref="@NotificationReference" Class="MyTelerikNotification"></TelerikNotification>
+
+<style>
+    .MyTelerikNotification .k-notification-container .k-notification {
+        width: 250px;
+        height: 50px;
+        font-size: 1.2em;
+        text-align: center;
+        align-items: center;
+        position: center;
+        border-radius: 12px;
+    }
+</style>
+
+@code {
+    public TelerikNotification? NotificationReference { get; set; }
+
+    public void SaveSuccess()
+    {
+        NotificationReference.Show(new NotificationModel()
+            {
+                Text = "Your changes have been saved.",
+                ThemeColor = ThemeConstants.Notification.ThemeColor.Success
+            });
+    }
+
+    public void SaveFailure()
+    {
+        NotificationReference.Show(new NotificationModel()
+            {
+                Text = "There was an error saving your changes",
+                ThemeColor = ThemeConstants.Notification.ThemeColor.Error
+            });
+    }
+}

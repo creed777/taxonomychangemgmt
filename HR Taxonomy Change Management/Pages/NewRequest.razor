@@ -1,0 +1,92 @@
+﻿@page "/newrequest"
+@page "/newrequest/{changeIdParam}"
+@using HR_Taxonomy_Change_Management.Component;
+@using HR_Taxonomy_Change_Management.Domain.Model;
+@using HR_Taxonomy_Change_Management.Repository.Model;
+@inherits BasePage;
+
+<style>
+    .k-radio {
+        border-color: black;
+    }
+
+    .k-radio:checked, .k-radio:checked:focus {
+        border-color: black;
+        background-color: #0078d4;
+    }
+
+    .help-Card {
+        box-shadow: none !important;
+        margin-left: 100px !important;
+        font-size: 14px;
+    }
+</style>
+<title>New Request</title>
+
+<TelerikCard>
+    @if (!IsEdit)
+    {
+        <div class="ms-section">
+            <div class="k-form k-form-md k-form-vertical">
+                <div class="k-form-field">
+                    <label class="label ms-section-header">Type of Request:</label>
+                    <div class="card-align">
+                        <div class="k-form-field-wrap">
+                            <TelerikRadioGroup OnChange="displayHelpCard" Data="@RequestTypeList"
+                                ValueField="RequestTypeId"
+                                TextField="RequestTypeName"
+                                @bind-Value="@SelectedRequestTypeId">
+                            </TelerikRadioGroup>
+                        </div>
+                        @if (SelectedRequestTypeId != 0)
+                        {
+                            <span class="help-Card">
+                                <TelerikCard Class="help-card">
+                                    @((MarkupString)helpCardText)
+                                </TelerikCard>
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+     @if (SelectedRequestTypeId == 1)
+    {
+        <RequestAddComponent @ref="AddComponent" TaxonomyList="TaxonomyDdl" Request="Request" IsEdit="@IsEdit" CreateRequestEvent="CreateRequestEvent" SaveEditEvent="SaveEditEvent"></RequestAddComponent>
+    }
+
+    @if (SelectedRequestTypeId == 2)
+    {
+        <RequestMoveComponent @ref="MoveComponent" TaxonomyList="TaxonomyDdl" Request="Request" IsEdit="@IsEdit" CreateRequestEvent="CreateRequestEvent" SaveEditEvent="SaveEditEvent"></RequestMoveComponent>
+    }
+
+    @if (SelectedRequestTypeId == 3)
+    {
+        <RequestRenameComponent @ref="RenameComponent" TaxonomyList="TaxonomyDdl" Request="Request" IsEdit="@IsEdit" CreateRequestEvent="CreateRequestEvent" SaveEditEvent="SaveEditEvent"></RequestRenameComponent>
+    }
+
+    @if (SelectedRequestTypeId == 4)
+    {
+        <RequestRemoveComponent @ref="RemoveComponent" TaxonomyList="TaxonomyDdl" Request="Request" IsEdit="@IsEdit" CreateRequestEvent="CreateRequestEvent" SaveEditEvent="SaveEditEvent"></RequestRemoveComponent>
+    } 
+</TelerikCard>
+
+<TelerikDialog @bind-Visible="ShowConfirmDialog"
+               Title="@ConfirmTitle">
+    <DialogTitle>Confirmation</DialogTitle>
+    <DialogContent>
+        Do you want to create another request?
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@( async () => { await StayOnPage(true); } )" class="btn btn-primary">Yes</TelerikButton>
+        <TelerikButton OnClick="@( async () => { await StayOnPage(false); } )" class="btn btn-secondary">No</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+<NotificationComponent @ref="SaveNotice"></NotificationComponent>
+
+@code {
+    NotificationComponent? SaveNotice { get; set; }
+}

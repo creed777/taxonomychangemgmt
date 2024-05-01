@@ -1,0 +1,194 @@
+﻿@page "/Taxonomy"
+@inherits BasePage
+
+@using HR_Taxonomy_Change_Management.Domain.Model;
+@using Telerik.Blazor.Components.Popup;
+@using HR_Taxonomy_Change_Management.Component;
+
+<style>
+
+    .k-button {
+        border: none;
+    }
+
+    .k-animation-container {
+        background-color: lightgray;
+        font-weight: normal;
+        color: black;
+        border:solid; 
+        border-color:black;
+        border-width: 1px;
+        border-radius: 12px;
+        padding: 3px;
+        margin-left:5px;
+    }
+</style>
+
+<TelerikCard>
+    <span class="ms-subsection-header">Taxonomy List</span>
+    <div class="ms-section">
+        <TelerikGrid Data="filtered_grid"
+                     Resizable=true
+                     ShowColumnMenu=true
+                     FilterMode="GridFilterMode.FilterMenu"
+                     Pageable=true
+                     Sortable=true
+                     Groupable=true
+                     LoadGroupsOnDemand=true
+                     Reorderable=true
+                     @bind-PageSize="@PageSize">
+            <GridToolBarTemplate>
+                <div style="display:flex; flex-direction:row; flex-grow:1; align-items:center; justify-content:space-between; width:100%">
+                    <GridSearchBox />
+                    <div>
+                        <label style="margin-right:10px;" class="k-checkbox-label"><TelerikCheckBox @bind-Value="@ExportAllPages" />Export All Pages</label>
+                        <GridCommandButton Rounded="lg" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Command="ExcelExport" Icon="@SvgIcon.FileExcel">Export</GridCommandButton>
+                    </div>
+                </div>
+
+                @{
+                    @foreach (var array in indexSelectedIds)
+                    {
+                        if (array != null)
+                            test = true;
+                    }
+
+                    @if (test == true)
+                    {
+                        <div style="display:flex; flex-direction:row; flex-grow:1; justify-content:flex-start; margin-top:20px; width:100%">
+                            Filters Applied:
+                            <ul>
+                                @for (int i = 0; i < indexSelectedIds.Length; i++)
+                                {
+                                    if (@indexSelectedIds[i] != null)
+                                    {
+                                        @string.Concat("L", i, ": ")
+                                        foreach (var item in @indexSelectedIds[i])
+                                        {
+                                            var name = TaxonomyList.Where(x => x.TaxonomyId == @item).Select(x => x.Name).First();
+                                            <li style="display:inline-block; margin-right:20px">@name</li>
+                                        }
+                                    }
+                                    if (@indexSelectedIds[i] != null)
+                                    {
+                                        <br />
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+                }
+            </GridToolBarTemplate>
+            <GridExport>
+                <GridExcelExport FileName="Taxonomy_Export" AllPages="@ExportAllPages" />
+            </GridExport>
+            <GridSettings>
+                <GridPagerSettings InputType="PagerInputType.Input"
+                                   PageSizes="@PageSizes"
+                                   ButtonCount="5"
+                                   Adaptive="true"
+                                   Position="PagerPosition.Top">
+                </GridPagerSettings>
+            </GridSettings>
+
+            <GridColumns>
+                <GridColumn Field="L1" Title="Level 1" FieldType="@typeof(string)">
+                    <Template>
+                        @{
+                            var item = (TaxonomyGridDTO)context;
+                        }
+                        @item.L1
+                        @{
+                            if (item.L1OwnerId != null)
+                            {
+                                <TelerikButton Visible=txOwnerPopupIsEnabled OnClick="@(() => Openpopup())" Class="popup popup-target" Icon="@SvgIcon.User" Title="The name of the owner" />
+                                <TelerikPopup @ref="@PopupRef"
+                                              DynamicAnchors="true"
+                                              MaxHeight="100px"
+                                              MinWidth="300px"
+                                              AnchorAlign='new PopupAlignSettings(horizontal: PopupHorizontalAlign.Right, vertical: PopupVerticalAlign.Top){}'
+                                              AnchorSelector=".popup-target">
+                                    <span>@item.L1OwnerName</span><br />
+                                    <span>@item.L1OwnerEmail</span>
+                                </TelerikPopup>
+                            }
+                        }
+                    </Template>
+                    <FilterMenuTemplate>
+                        <div>
+                            <TelerikMultiSelect Width="300px" AutoClose=false Data="@L1List" TextField="Name" ValueField="TaxonomyId" OnChange="@(() => FilterGrid(1, SelectedL1Ids))" @bind-Value=@SelectedL1Ids> </TelerikMultiSelect>
+                        </div>
+                    </FilterMenuTemplate>
+                    <FilterMenuButtonsTemplate />
+                </GridColumn>
+                <GridColumn Field="L2" Title="Level 2" FieldType="@typeof(string)">
+                    <Template>
+                        @{
+                            var item = (TaxonomyGridDTO)context;
+                        }
+                        @item.L2
+                        @{
+                            if (item.L2OwnerId != null)
+                            {
+                                <TelerikButton Id="@($"button{item.GridId}" )" OnClick="@(() => PopupRefs[item.GridId].Popup_OpenAsync())" Class="popup popup-target" Icon="@SvgIcon.User" Title="The name of the owner" />
+                                <TelerikPopup Class="popup" 
+                                              @ref="@PopupRefs[item.GridId]"
+                                              MaxHeight="100px"
+                                              MinWidth="300px"
+                                              AnchorSelector="@( $"#button{item.GridId}" )">
+                                    <span>@item.L2OwnerName</span><br />
+                                    <span>@item.L2OwnerEmail</span>
+                                </TelerikPopup>
+                            }
+                        }
+                    </Template>
+                    <FilterMenuTemplate>
+                        <div>
+                            <TelerikMultiSelect Width="300px" AutoClose=false Data="@L2List" TextField="Name" ValueField="TaxonomyId" OnChange="@( () => FilterGrid(2, SelectedL2Ids))" @bind-Value=@SelectedL2Ids> </TelerikMultiSelect>
+                        </div>
+                    </FilterMenuTemplate>
+                    <FilterMenuButtonsTemplate />
+                </GridColumn>
+                <GridColumn Field="L3" Title="Level 3" FieldType="@typeof(string)">
+                    <FilterMenuTemplate>
+                        <div>
+                            <TelerikMultiSelect Width="300px" AutoClose=false Data="@L3List" TextField="Name" ValueField="TaxonomyId" OnChange="@( () => FilterGrid(3, SelectedL3Ids))" @bind-Value=@SelectedL3Ids> </TelerikMultiSelect>
+                        </div>
+                    </FilterMenuTemplate>
+                    <FilterMenuButtonsTemplate />
+                </GridColumn>
+                <GridColumn Field="L4" Title="Level 4" FieldType="@typeof(string)">
+                    <FilterMenuTemplate>
+                        <div>
+                            <TelerikMultiSelect Width="300px" AutoClose=false Data="@L4List" TextField="Name" ValueField="TaxonomyId" OnChange="@( () => FilterGrid(4, SelectedL4Ids))" @bind-Value=@SelectedL4Ids> </TelerikMultiSelect>
+                        </div>
+                    </FilterMenuTemplate>
+                    <FilterMenuButtonsTemplate />
+                </GridColumn>
+                <GridColumn Field="L5" Title="Level 5" FieldType="@typeof(string)">
+                    <FilterMenuTemplate>
+                        <div>
+                            <TelerikMultiSelect Width="300px" AutoClose=false Data="@L5List" TextField="Name" ValueField="TaxonomyId" OnChange="@( () => FilterGrid(5, SelectedL5Ids))" @bind-Value=@SelectedL5Ids> </TelerikMultiSelect>
+                        </div>
+                    </FilterMenuTemplate>
+                    <FilterMenuButtonsTemplate />
+                </GridColumn>
+            </GridColumns>
+        </TelerikGrid>
+
+    </div>
+</TelerikCard>
+
+<Spinner LoaderVisible=LoaderVisible></Spinner>
+
+@code {
+    bool popupVisible { get; set; }
+    bool test { get; set; }
+    bool ExportAllPages { get; set; }
+    int PageSize { get; set; } = 15;
+    protected List<int?> PageSizes { get; set; } = new List<int?> { 15, 30, 50, null };
+    private int L1Id { get; set; }
+    private List<int>? SelectedIds { get; set; }
+    private TelerikPopup? PopupRef { get; set; }
+    private Dictionary<int, TelerikPopup?> PopupRefs { get; set; } = new();
+}

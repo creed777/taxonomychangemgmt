@@ -1,0 +1,23 @@
+﻿<style>
+    .k-overlay{
+        background-color:lightgray;
+    }
+    .dialog{
+        background-color:transparent;
+        box-shadow:none;
+    }
+</style>
+
+<TelerikDialog @bind-Visible="LoaderVisible" Width="100px" ShowCloseButton="false" Class="dialog">
+    <DialogContent>
+    <div style="display:flex; justify-content:center; width:100%;">
+        <TelerikLoader Size="@ThemeConstants.Loader.Size.Large"
+                       ThemeColor="@ThemeConstants.Loader.ThemeColor.Tertiary"
+                       Type="@LoaderType.ConvergingSpinner" />
+    </div>
+    </DialogContent>
+</TelerikDialog>
+
+@code {
+    [Parameter] public bool LoaderVisible { get; set; }
+}

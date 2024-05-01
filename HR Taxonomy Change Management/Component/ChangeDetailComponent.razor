@@ -1,0 +1,166 @@
+﻿@using HR_Taxonomy_Change_Management.Repository.Model;
+@using HR_Taxonomy_Change_Management.Domain.Model;
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@using Newtonsoft.Json;
+
+@*this is required for telerik grid vertical alignment and has to be on the razor page*@
+<style>
+    .k-grid td.vertical-aligned-cell {
+        vertical-align: top;
+        cursor: pointer;
+    }
+
+    .k-icon-button.k-button-md {
+        border: none !important;
+    }
+
+    .k-grid td.vertical-aligned-cell {
+        cursor: default;
+    }
+
+    .k-grid .header-select-all .k-checkbox {
+        vertical-align: middle;
+    }
+
+    .k-grid .header-select-all,
+    .k-grid td:first-child {
+        text-align: center;
+    }
+</style>
+
+<div class="main-item-dropshadow">
+    <TelerikGrid Data="@Request.Changes"
+                 Navigable = "true"
+                 Pageable="false"
+                 Sortable="true"
+                 Class="change-grid"
+                 SelectionMode="GridSelectionMode.Multiple"
+    @bind-SelectedItems="SelectedItems"
+    @ref="GridRef">
+        <GridColumns>
+            <GridCheckboxColumn Visible="IsTaxApprover" HeaderClass="header-select-all" Width="3%">
+                <HeaderTemplate>
+                    @{
+                        <TelerikCheckBox @bind-Value="@SelectAllCheckBoxValue"
+                                         Enabled=true
+                                         TabIndex="-1"
+                                         OnChange="@ToggleSelectAll" />
+                    }
+                </HeaderTemplate>
+            </GridCheckboxColumn>
+            <GridCommandColumn Context="dataItem" Title="Edit" Width="3%">
+                <GridCommandButton Command="Edit" Icon="@FontIcon.Pencil" OnClick="EditChange" Enabled="EditEnabled"></GridCommandButton>
+            </GridCommandColumn>
+            <GridColumn Field="CurrentStatus" Width="9%" Title="Status" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+            <GridColumn Field="ReviewText" Width="20%" Title="Pending Review Text" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" Visible="TextIsVisible()" />
+            <GridColumn Field="@(nameof(ChangeDetailDTO.Change))" Title="Change Description" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+                <Template Context="GridColumn">
+                    @(new MarkupString((GridColumn as ChangeDetailDTO).Change))
+                </Template>
+            </GridColumn>
+            <GridColumn Field="ModifyUser" Width="10%" Title="Modified By" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+            <GridColumn Field="ModifyDate" Width="10%" Title="Modified On" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+<div style="display:flex; flex-flow:row">
+
+    @if (IsTaxApprover)
+    {
+        <div style="margin-top:20px; width:15%">
+            <TelerikButtonGroup>
+                <TelerikButton Id="btnApprove" Class="ms-button" ButtonType="ButtonType.Button" Enabled="(IsAnyDataSelected() || IsAllDataSelected()) && NoneAreApproved() && !IsRequestClosed()" OnClick='() => StatusChange("Approve")'>Approve</TelerikButton>
+                <TelerikButton Id="btnReview" Class="ms-button" ButtonType="ButtonType.Button" Enabled="(IsAnyDataSelected() || IsAllDataSelected()) && NoneAreReview() && !IsRequestClosed()" OnClick='() => StatusChange("PendingReview")'>Review</TelerikButton>
+                <TelerikButton Id="btnReject" class="ms-button" ButtonType="ButtonType.Button" Enabled="(IsAnyDataSelected() || IsAllDataSelected()) && NoneAreRejected() && !IsRequestClosed()" OnClick='() => StatusChange("Denied")'>Denied</TelerikButton>
+            </TelerikButtonGroup>
+        </div>
+    }
+</div>
+
+@code {
+    private bool EditEnabled { get; set; }
+    private TelerikGrid<ChangeDetailDTO> GridRef { get; set; } = new();
+    private string? ReviewText { get; set; }
+    private string? ModalTitle { get; set; } = string.Empty;
+    private int ModalTextId { get; set; }
+
+    private bool TextIsVisible()
+    {
+        if (Request.Changes != null)
+        {
+            if (Request.Changes.Any(x => x.CurrentStatus == "Pending Review"))
+                return true;
+            else
+                return false;
+        }
+        return false;
+    }
+
+    bool? SelectAllCheckBoxValue
+    {
+        get
+        {
+            if (IsAllDataSelected())
+                return true;
+            else if (IsAnyDataSelected())
+                return null;
+
+            return false;
+        }
+
+        set
+        {
+            if (value.HasValue && value.Value == true)
+                SelectedItems = GridRef.Data;
+            else
+                SelectedItems = new List<ChangeDetailDTO>();
+        }
+    }
+
+    bool IsRequestClosed()
+    {
+        return Request.CurrentStatus == RequestStatusEnum.Closed.ToString();
+        ;
+    }
+
+    bool IsAnyDataSelected()
+    {
+        return GridRef.SelectedItems.Count() > 0 && GridRef.SelectedItems.Count() < GridRef.Data.Count();
+    }
+
+    bool IsAllDataSelected()
+    {
+        return GridRef.SelectedItems.Count() == (GridRef.Data == null ? 0 : GridRef.Data.Count());
+    }
+
+    bool NoneAreApproved()
+    {
+        return !GridRef.SelectedItems.Any(x => x.CurrentStatus == "Approved");
+    }
+
+    bool NoneAreRejected()
+    {
+        return !GridRef.SelectedItems.Any(x => x.CurrentStatus == "Denied");
+    }
+
+    bool NoneAreReview()
+    {
+        return !GridRef.SelectedItems.Any(x => x.CurrentStatus == "Pending Review");
+    }
+
+    bool GridHasData()
+    {
+        return GridRef.Data.Count() > 0;
+    }
+    private IEnumerable<ChangeDetailDTO> SelectedItems { get; set; } = new List<ChangeDetailDTO>();
+
+    void ToggleSelectAll()
+    {
+        if (SelectAllCheckBoxValue.HasValue && SelectAllCheckBoxValue.Value)
+            SelectAllCheckBoxValue = false;
+        else
+            SelectAllCheckBoxValue = true;
+    }
+}

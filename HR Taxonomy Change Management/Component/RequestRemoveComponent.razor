@@ -1,0 +1,127 @@
+﻿@using HR_Taxonomy_Change_Management.Domain.Model;
+<style>
+
+    .k-icon-button.k-button-md {
+        border: none !important;
+    }
+
+    .justification.k-input,
+    .k-textarea, .k-dropdownlist {
+        width: 500px;
+    }
+
+    .copy-button {
+        margin-top: 37px;
+    }
+
+</style>
+<label title="New Request form">
+<EditForm Model="Request" OnValidSubmit="AddToGrid">
+    <div class="ms-section form-div">
+        <DataAnnotationsValidator />
+        <div class="ms-section-header">Request Details:</div>
+        <div class="ms-form-row form-div">
+            <TelerikFloatingLabel Class="ms-input" Text="Request Status">
+                <span class="ms-lock-icon">
+                    <TelerikTextBox Class="ms-input" @bind-Value="Request.CurrentStatus" Enabled=false></TelerikTextBox>
+                    <TelerikFontIcon Icon="@FontIcon.Lock" />
+                </span>
+            </TelerikFloatingLabel>
+            <TelerikFloatingLabel Class="ms-input" Text="Request Type">
+                <span class="ms-lock-icon">
+                    <TelerikTextBox Class="ms-input" @bind-Value="Request.RequestTypeName" Enabled=false></TelerikTextBox>
+                    <TelerikFontIcon Icon="@FontIcon.Lock" />
+                </span>
+            </TelerikFloatingLabel>
+            <TelerikFloatingLabel Class="ms-input" Text="Submitted by">
+                <span class="ms-lock-icon">
+                    <TelerikTextBox Class="ms-input" @bind-Value="Request.SubmitUser" Enabled=false></TelerikTextBox>
+                    <TelerikFontIcon Icon="@FontIcon.Lock" />
+                </span>
+            </TelerikFloatingLabel>
+        </div>
+        <div class="form-row">
+            <TelerikFloatingLabel Text="Justification">
+                <TelerikTextArea ValueChanged="@( (string s) => DoWordCount(s) )" Value="@Request.Justification" ValueExpression="@(() => Request.Justification)" Class="justification ms-input" AutoSize=true></TelerikTextArea>
+            </TelerikFloatingLabel>
+            <div class="div-justification"><span>@wordCount /50</span><ValidationMessage For="@(() =>Request.Justification)" /></div>
+        </div>
+    </div>
+    <div class="ms-section form-div">
+        <div class="ms-section-header"> Change Details</div>
+        <input type="text" hidden="true" @bind="ChangeDetail.ChangeDetailId" />
+
+        <div style="margin-bottom:25px; display:flex; flex-direction:row">
+            <span class="ddl">
+                <label>Current Taxonomy</label>
+                <TaxonomyDDLComponent @ref=CurrentTaxDDL TaxonomyList="TaxonomyList" DDLGroup="New" CurrentLevels=CurrentLevels NewLevels="NewLevels" NewLevelSelectedEvent="@NewLevelSelectedEvent"></TaxonomyDDLComponent>
+            </span>
+        </div>
+        <TelerikButtonGroup>
+            <TelerikButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" ButtonType="ButtonType.Submit" Enabled="@IsAddEnabled">@buttonText</TelerikButton>
+            <TelerikButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Secondary)" ButtonType="ButtonType.Button" OnClick="ClearForm">Cancel</TelerikButton>
+        </TelerikButtonGroup>
+    </div>
+</EditForm>
+</label>
+@if (!IsEdit)
+{
+    <div class="ms-section grid-div">
+        <div class="ms-form-row grid-div">
+            <TelerikGrid Id="ChangeGrid"
+                         Data="@Request.Changes"
+                         Navigable = "true"
+                         Pageable="false"
+                         Resizable="true"
+                         Sortable="true"
+                         OnDelete="DeleteRow">
+                <GridSettings>
+                </GridSettings>
+                <GridColumns>
+                    <GridCommandColumn Width="5%" Context="dataItem">
+                        <GridCommandButton Command="Delete" Icon="@FontIcon.Trash"></GridCommandButton>
+                    </GridCommandColumn>
+                    <GridColumn Field="@(nameof(ChangeDetailDTO.Change))" Title="Change Description" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+                        <Template>
+                            @(
+                                new MarkupString((context as ChangeDetailDTO).Change)
+                                )
+                        </Template>
+                    </GridColumn>
+                </GridColumns>
+            </TelerikGrid>
+        </div>
+        <div class="ms-form-row">
+            <TelerikButtonGroup>
+                <TelerikButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="CreateRequest" ButtonType="ButtonType.Submit">Save</TelerikButton>
+                <TelerikButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Secondary)" ButtonType="ButtonType.Button" OnClick="(() => ClearGrid(true))">Cancel</TelerikButton>
+
+            </TelerikButtonGroup>
+        </div>
+    </div>
+    <Spinner LoaderVisible="LoaderVisible"></Spinner>
+}
+
+<TelerikDialog @ref="@DialogRef" @bind-Visible="ShowRemoveDialog" Width="300px">
+    <DialogTitle>Confirm Remove</DialogTitle>
+    <DialogContent>
+            This will remove @RemoveList.Count folders from under @CurrentLevels.Last().Name <br /><br />  Did you want to remove @CurrentLevels.Last().Name instead ?
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@( async () => { DialogConfirmation("yes"); } )" class="btn btn-primary">Yes</TelerikButton>
+        <TelerikButton OnClick="@( async () => { DialogConfirmation("no"); } )" class="btn btn-secondary">No</TelerikButton>
+        <TelerikButton OnClick="@( async () => { DialogConfirmation("cancel"); } )" class="btn btn-secondary">Cancel</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+@code {
+    bool LoaderVisible { get; set; } = false;
+    private int wordCount;
+    bool isSelected;
+
+    private void DoWordCount(string s)
+    {
+        wordCount = s.Count();
+        Request.Justification = s;
+    }
+}

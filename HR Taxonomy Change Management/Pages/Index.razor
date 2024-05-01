@@ -1,0 +1,216 @@
+﻿@page "/"
+@inherits BasePage;
+@using HR_Taxonomy_Change_Management.Domain.Model;
+@using HR_Taxonomy_Change_Management.Component;
+@using Telerik.DataSource
+@using HR_Taxonomy_Change_Management.Repository.Model;
+
+@*this is required for telerik grid vertical alignment and has to be on the razor page*@
+<style>
+    .k-grid td.vertical-aligned-cell {
+        vertical-align: top;
+        cursor:pointer;
+    }
+
+    li{
+        margin-left:10px;
+    }
+
+</style>
+
+<title>Home</title>
+
+<div style="padding-top:20px">
+<TelerikGrid Data="@RequestList"
+             ShowColumnMenu=true
+             Reorderable=true
+             Pageable="true"
+             Navigable = "true"
+            @bind-PageSize="@PageSize" 
+            @bind-Page="@CurrentPage"
+             Resizable="true"
+             Sortable="true"
+             FilterMode="Telerik.Blazor.GridFilterMode.FilterMenu "
+             OnRowClick="@OpenRequestDetailAsync"
+             OnStateChanged="@((GridStateEventArgs<RequestDTO> args) => GridStateChanged(args))"
+             OnStateInit="@((GridStateEventArgs<RequestDTO> args) => InitGridState(args))">
+    <GridToolBarTemplate>
+        <div style="display:flex; flex-direction:row; flex-grow:1; align-items:center; justify-content:space-between">
+            <div>
+                <TelerikCheckBox TabIndex="1" Id="chkPeriodFilter" OnChange="GetAllRequets" @bind-Value="FilterForPeriod"></TelerikCheckBox>
+                <label for="chkPeriodFilter">View all requests</label>
+            </div>
+            <GridCommandButton Rounded="lg" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Command="ExcelExport" Icon="@SvgIcon.FileExcel">Export</GridCommandButton>
+        </div>
+    </GridToolBarTemplate>
+    <GridSettings>
+        <GridPagerSettings InputType="PagerInputType.Input"
+                            PageSizes="@PageSizes"
+                            ButtonCount="5"
+                            Adaptive="true"
+                            Position="PagerPosition.Bottom">
+        </GridPagerSettings>
+    </GridSettings>
+    <GridColumns>
+            <GridColumn Field="ChangePeriodId" Width="5%" Visible="false" Title="ChangePeriodId" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+            <GridColumn Field="RequestId" Width="5%" Title="ID" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+            <GridColumn Field="SubmitDate" Width="9%" title="Requested Date" DisplayFormat="{0:MMM dd yyyy}" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+            <GridColumn Field="SubmitUser" Width="15%" title="Requested By" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+            <GridColumn Field="CurrentStatus" Width="9%" Title="Status" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+                <FilterMenuTemplate>
+                    @foreach(var status in RequestList.DistinctBy(x => x.CurrentStatus).Select(x => x.CurrentStatus))
+                    {
+                        <div>
+                            <TelerikCheckBox Value="@(IsCheckboxInCurrentFilter(context.FilterDescriptor, status.ToString()))"
+                                             TValue="bool"
+                                             ValueChanged="@((value) => FilterStatus(value, status.ToString(), context))"
+                                             Id="@($"status_{status}")">
+                            </TelerikCheckBox>
+                            <label for="@($"status_{status}")">
+                                @if (status == null) 
+                                {
+                                    <text>Empty</text>
+                                }
+                                else
+                                {
+                                    @status
+                                }
+                            </label>
+                        </div>
+                    }
+                </FilterMenuTemplate>
+            </GridColumn>
+            <GridColumn Field="RequestTypeName" Width="5%" Title="Type" Sortable="true" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" >
+                <FilterMenuTemplate>
+                    @foreach(var status in RequestList.DistinctBy(x => x.RequestTypeName).Select(x => x.RequestTypeName))
+                    {
+                        <div>
+                            <TelerikCheckBox Value="@(IsCheckboxInCurrentFilter(context.FilterDescriptor, status.ToString()))"
+                                             TValue="bool"
+                                             ValueChanged="@((value) => FilterType(value, status.ToString(), context))"
+                                             Id="@($"status_{status}")">
+                            </TelerikCheckBox>
+                            <label for="@($"status_{status}")">
+                                @if (status == null) // part of handling nulls - show meaningful text for the end user
+                                {
+                                    <text>Empty</text>
+                                }
+                                else
+                                {
+                                    @status
+                                }
+                            </label>
+                        </div>
+                    }
+                </FilterMenuTemplate>
+            </GridColumn>
+            <GridColumn Field="@(nameof(RequestDTO.Change))" Title="Change Description" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" >
+            <Template>
+                @(new MarkupString((context as RequestDTO).Change))
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@(nameof(RequestDTO.Justification))" Visible="false" Title="Justification" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+     </GridColumns>
+</TelerikGrid>
+
+</div>
+<Spinner LoaderVisible = "LoaderVisible"></Spinner>
+
+@code {
+    bool LoaderVisible { get; set; } = false;
+    public int Page { get; set; } = 1;
+    int PageSize { get; set; } = 15;
+    int CurrentPage { get; set; } = 1;
+    protected List<int?> PageSizes { get; set; } = new List<int?> { 15, 30, null };
+
+    private bool IsCheckboxInCurrentFilter(CompositeFilterDescriptor filterDescriptor, string status)
+    {
+        // get all current filter descriptors and evaluate whether to select the current checkbox
+        // the default value for string filter descriptors is null so it would select the null checkbox always
+        // so we will add a check to ensure it matches the desired operator - IsNull (see the UpdateCheckedSizes method below)
+        if (status == null)
+        {
+            foreach (FilterDescriptor item in filterDescriptor.FilterDescriptors)
+            {
+                if (item.Operator == FilterOperator.IsNull)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return filterDescriptor.FilterDescriptors.Select(f => (f as FilterDescriptor).Value?.ToString()).ToList().Contains(status);
+    }
+
+    private void FilterStatus(bool isChecked, string itemValue, FilterMenuTemplateContext context)
+    {
+        
+        var compositeFilterDescriptor = context.FilterDescriptor;
+        compositeFilterDescriptor.LogicalOperator = FilterCompositionLogicalOperator.Or;
+
+        if (!isChecked)
+        {
+            // find and remove the filter descriptor for this checkbox
+            compositeFilterDescriptor.FilterDescriptors.Remove(compositeFilterDescriptor.FilterDescriptors.First(x =>
+            {
+                var fd = x as FilterDescriptor;
+                if ((fd.Operator == FilterOperator.IsNull && itemValue == null) ||
+                    (fd.Operator == FilterOperator.IsEqualTo && fd.Value?.ToString() == itemValue))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }));
+        }
+        else
+        {
+            // add a filter descriptor for this checkbox
+            compositeFilterDescriptor.FilterDescriptors.Add(new FilterDescriptor()
+                {
+                    Member = nameof(RequestDTO.CurrentStatus),
+                    MemberType = typeof(string),
+                    Operator = itemValue == null ? FilterOperator.IsNull : FilterOperator.IsEqualTo,
+                    Value = itemValue
+                });
+        }
+    }
+
+    private void FilterType(bool isChecked, string itemValue, FilterMenuTemplateContext context)
+    {
+
+        var compositeFilterDescriptor = context.FilterDescriptor;
+        compositeFilterDescriptor.LogicalOperator = FilterCompositionLogicalOperator.Or;
+
+        if (!isChecked)
+        {
+            // find and remove the filter descriptor for this checkbox
+            compositeFilterDescriptor.FilterDescriptors.Remove(compositeFilterDescriptor.FilterDescriptors.First(x =>
+            {
+                var fd = x as FilterDescriptor;
+                if ((fd.Operator == FilterOperator.IsNull && itemValue == null) ||
+                    (fd.Operator == FilterOperator.IsEqualTo && fd.Value?.ToString() == itemValue))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }));
+        }
+        else
+        {
+            // add a filter descriptor for this checkbox
+            compositeFilterDescriptor.FilterDescriptors.Add(new FilterDescriptor()
+                {
+                    Member = nameof(RequestDTO.RequestTypeName),
+                    MemberType = typeof(string),
+                    Operator = itemValue == null ? FilterOperator.IsNull : FilterOperator.IsEqualTo,
+                    Value = itemValue
+                });
+        }
+    }
+}

@@ -1,0 +1,96 @@
+﻿@page "/requestdetail/"
+@page "/requestdetail/{RequestIdParam}"
+@using HR_Taxonomy_Change_Management.Component;
+@inherits BasePage
+
+<title>Request Detail</title>
+<EditForm ID="RequestEdit" Model="@Request" OnSubmit="SaveEdit">
+    <TelerikCard>
+        <DataAnnotationsValidator />
+
+        <div class="ms-section-header">
+            Request Details
+        </div>
+        <div class="ms-section">
+            <div class="ms-form-row">
+                <TelerikFloatingLabel Class="ms-input" Text="Request Type">
+                    <span class="ms-lock-icon">
+                        <TelerikTextBox Width="fit-content" Id="txtRequestType" @bind-Value="@Request.RequestTypeName" Enabled=false Rounded="md"></TelerikTextBox>
+                        <TelerikFontIcon Icon="@FontIcon.Lock" />
+                    </span>
+                </TelerikFloatingLabel>
+
+                <TelerikFloatingLabel Class="ms-input" Text="Submitted By">
+                    <span class="ms-lock-icon">
+                        <TelerikTextBox Id="txtSubmittedBy" @bind-Value="@Request.SubmitUser" Enabled=false Rounded="md"></TelerikTextBox>
+                        <TelerikFontIcon Icon="@FontIcon.Lock" />
+                    </span>
+                </TelerikFloatingLabel>
+                <TelerikFloatingLabel Class="ms-input" Text="Submitted On">
+                    <span class="ms-lock-icon">
+                        <TelerikDateInput Id="dtSubmitDate" @bind-Value="@Request.SubmitDate" Enabled=false Rounded="md"></TelerikDateInput>
+                        <TelerikFontIcon Icon="@FontIcon.Lock" />
+                    </span>
+                </TelerikFloatingLabel>
+                <TelerikFloatingLabel Class="ms-input" Text="Request Status">
+                    <span class="ms-lock-icon">
+                        <TelerikTextBox Id="txtStatus" @bind-Value="@Request.CurrentStatus" Enabled=false Rounded="md"></TelerikTextBox>
+                        <TelerikFontIcon Icon="@FontIcon.Lock" />
+                    </span>
+                </TelerikFloatingLabel>
+            </div>
+
+            <div style="display:flex">
+
+                <TelerikFloatingLabel Text="Justification">
+                    <span class="lock-icon">
+                        <TelerikTextArea Id="txtJustification" AutoSize=true Width="50em" @bind-Value="@Request.Justification" Rounded="md"></TelerikTextArea>
+                    </span>
+                </TelerikFloatingLabel>
+            </div>
+
+            <div style="margin-top:20px; width:15%">
+                <TelerikButtonGroup>
+                    <TelerikButton Id="btnCancel" OnClick="CancelEdit" ButtonType="ButtonType.Button">Cancel</TelerikButton>
+                    <TelerikButton Id="btnSubmit" Form="RequestEdit" ButtonType="ButtonType.Submit">Save</TelerikButton>
+                </TelerikButtonGroup>
+            </div>
+        </div>
+
+         <div class="ms-section-header">
+            Change Details
+        </div>
+        @* <div class="ms-section"> *@
+
+        <ChangeDetailComponent StatusChangeEvent="ApproveRequestEvent" SaveEditRequestEvent="SaveEditRequestEvent" IsTaxApprover="IsTaxApprover" Request="Request"></ChangeDetailComponent>
+        @* </div> *@
+    </TelerikCard>
+</EditForm>
+
+<TelerikDialog @bind-Visible="ShowConfirmDialog"
+            Title="@Title">
+<DialogContent>
+    Stay on this page?
+</DialogContent>
+<DialogButtons>
+    <TelerikButton OnClick="@(() => { StayOnPage(true); })">Yes</TelerikButton>
+    <TelerikButton OnClick="@(() => { StayOnPage(false); })">No</TelerikButton>
+</DialogButtons>
+</TelerikDialog>
+
+@code {
+    private string Title { get; set; } = string.Empty;
+    private bool ShowConfirmDialog { get; set; }
+
+    private void StayOnPage(bool answer)
+    {
+        if (answer)
+            ShowConfirmDialog = false;
+
+        else
+        {
+            ShowConfirmDialog = false;
+            NavManager.NavigateTo("/");
+        }
+    }
+}

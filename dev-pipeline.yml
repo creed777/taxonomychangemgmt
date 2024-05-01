@@ -1,0 +1,84 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: CredScan@3
+  inputs:
+    outputFormat: 'sarif'
+    debugMode: false
+
+- task: NuGetToolInstaller@1
+  
+- task: TSAUpload@2
+  inputs:
+    GdnPublishTsaOnboard: false
+    GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)\HR Taxonomy Change Management\TsaOptions.gdntsa'
+
+- task: NuGetCommand@2
+  displayName: Nuget Restore
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+    feedsToUse: 'select'
+    vstsFeed: '33581106-1fd6-4092-9693-a20196c22142/53f90c9a-62a2-49cc-91c6-9ae04c4ca4fd'
+
+- task: VSBuild@1
+  displayName: 'Build Solution'
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+    platform: '$(buildPlatform)'
+    configuration: debug
+    restoreNugetPackages: false
+
+- task: DotNetCoreCLI@2
+  displayName: 'Install EF tool'
+  inputs:
+   command: 'custom'
+   custom: 'tool'
+   arguments: 'install dotnet-ef --global --version 7.0.5'
+   workingDirectory: '$(Agent.BuildDirectory)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Generate EF SQL Script'
+  inputs:
+    command: 'custom'
+    custom: 'ef'
+    arguments: 'migrations script --no-build --verbose --project "D:\a\1\s\HR Taxonomy Change Management\HR Taxonomy Change Management.csproj" --output $(build.artifactStagingDirectory)\script.sql  --idempotent'
+
+- task: VSTest@2
+  displayName: 'Running Unit Tests'
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: SqlAzureDacpacDeployment@1
+  inputs:
+    azureSubscription: 'HR Data Governance (2442165c-339d-4e83-a443-a6583c372938)'
+    AuthenticationType: 'servicePrincipal'
+    ServerName: 'hrchangemanagement.database.windows.net'
+    DatabaseName: 'hrchangemanagement'
+    deployType: 'SqlTask'
+    SqlFile: $(build.artifactStagingDirectory)\script.sql
+    IpDetectionMethod: 'AutoDetect'
+    
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'HR Data Governance (2442165c-339d-4e83-a443-a6583c372938)'
+    appType: 'webApp'
+    WebAppName: 'HRTaxonomyChangeManagement'
+    packageForLinux: '$(build.artifactStagingDirectory)/**/*.zip'

@@ -1,0 +1,14 @@
+﻿.modal-backdrop {
+    background-color: rgb(128, 128, 128, .9) !important;
+}
+
+.modal-dialog {
+    position: absolute;
+    top: 250px;
+    right: 100px;
+    bottom: 0;
+    left: 0;
+    z-index: 10040;
+    overflow: auto;
+    overflow-y: auto;
+}

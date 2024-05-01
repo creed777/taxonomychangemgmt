@@ -1,0 +1,10 @@
+﻿div {
+    width: 25%;
+    margin-bottom:10px;
+}
+
+.div-justification {
+    display: flex;
+    width: 500px;
+    justify-content: space-between;
+}

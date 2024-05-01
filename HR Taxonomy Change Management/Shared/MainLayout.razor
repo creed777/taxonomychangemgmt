@@ -1,0 +1,59 @@
+@layout TelerikLayout
+@inherits LayoutComponentBase
+
+<style>
+    .k-grid .k-table-row.k-table-alt-row {
+        background-color: #FFF !important;
+    }
+
+    .k-grid .k-table-tbody > .k-table-row:hover {
+        background-color: #FAF9F8 !important;
+    }
+
+    .k-menu:not(.k-context-menu) .k-link > .k-icon, .k-menu:not(.k-context-menu) .k-link > .k-svg-icon {
+        font-size: 30px !important;
+        color: white !important;
+        margin-right:1rem;
+    }
+
+    .k-menu-expand-arrow {
+        display: none;
+    }
+</style>
+
+<PageTitle>HR Taxonomy Change Management</PageTitle>
+
+<div class="container">
+    <div class="border" style="flex-direction:column;">
+        <div style="display:flex;  ">
+            <div class="title">
+                Taxonomy Change Management
+            </div>
+            @if (ShowChangeMessage)
+            {
+                <div class="changePeriod" style="flex-direction:column; align-items:center;">
+                    <span>This is outside the change window.  No new changes can be submited.</span>
+                        <span>The next change period starts @PeriodStartDate</span>
+                </div>
+            }
+        </div>
+        <div class="login-menu">
+            <div class="login">
+                <LoginDisplay />
+            </div>
+            <div class="menu">
+                <TelerikMenu IconField="@(nameof(MenuItem.Icon))" Data="MenuItems" Orientation=@MenuOrientation.Vertical Class="icon-settings"></TelerikMenu>
+            </div>
+        </div>
+    </div>
+    
+    <div>
+        <article class="content px-4">
+            @Body
+        </article>
+    </div>
+</div>
+ 
+@code{
+}
+

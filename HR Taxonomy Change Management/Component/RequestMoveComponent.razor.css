@@ -1,0 +1,8 @@
+﻿.ddl{
+    margin-right: 24px;
+}
+
+.center-box{
+    display:flex;
+    flex-direction:column;
+}

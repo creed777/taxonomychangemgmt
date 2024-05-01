@@ -1,0 +1,98 @@
+﻿@using HR_Taxonomy_Change_Management.Domain.Model;
+
+@*the ddl's are doubled up because if the combo box is set to AllowCustom=false, it still allows you to type in the input and then discards it.  Thats confusing for a user. *@
+
+@if (AllowCustom)
+{
+    <div>
+        <TelerikFloatingLabel Text="Level 1">
+            <TelerikComboBox Class="justification" AllowCustom="true" Data="@L1" ClearButton="true" TextField="Name" ValueField="TaxonomyId" @bind-Value=@L1Value OnChange="@(() => GetNextLevel(L1Value, 1))"> </TelerikComboBox>
+        </TelerikFloatingLabel>
+    </div>
+
+    @if (!String.IsNullOrEmpty(L1Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 2">
+                <TelerikComboBox Class="justification" @ref="TestRef" id="L2" AllowCustom="true" Data="@L2" ClearButton="true" TextField="Name" ValueField="TaxonomyId" @bind-Value=@L2Value OnChange="@(() => GetNextLevel(L2Value, 2))"></TelerikComboBox>
+            </TelerikFloatingLabel>
+        </div>
+    }
+
+    @if (!String.IsNullOrEmpty(L2Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 3">
+                <TelerikComboBox Class="justification" Data="@L3" AllowCustom="true" TextField="Name" ClearButton=true ValueField="TaxonomyId" @bind-Value="@L3Value" OnChange="@(() => GetNextLevel(L3Value, 3))"></TelerikComboBox>
+            </TelerikFloatingLabel>
+        </div>
+    }
+
+    @if (!String.IsNullOrEmpty(L3Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 4">
+                <TelerikComboBox Class="justification" Data="@L4" AllowCustom="true" TextField="Name" ClearButton=true ValueField="TaxonomyId" @bind-Value="@L4Value" OnChange="@(() => GetNextLevel(L4Value, 4))"></TelerikComboBox>
+            </TelerikFloatingLabel>
+        </div>
+    }
+
+    @if (!String.IsNullOrEmpty(L4Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 5">
+                <TelerikComboBox Class="justification" Data="@L5" AllowCustom="true" ClearButton="true" TextField="Name" ValueField="TaxonomyId" @bind-Value="@L5Value" OnChange="@(() => GetNextLevel(L5Value, 5))"></TelerikComboBox>
+            </TelerikFloatingLabel>
+        </div>
+    }
+}
+else  
+{
+    <div>
+        <TelerikFloatingLabel Text="Level 1">
+            <TelerikDropDownList Class="justification" Data="@L1" TextField="Name" ValueField="TaxonomyId" @bind-Value=@L1Value OnChange="@(() => GetNextLevel(L1Value, 1))"> </TelerikDropDownList>
+        </TelerikFloatingLabel>
+    </div>
+
+    @if (!String.IsNullOrEmpty(L1Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 2">
+                <TelerikDropDownList Class="justification" Data="@L2" TextField="Name" ValueField="TaxonomyId" @bind-Value=@L2Value OnChange="@(() => GetNextLevel(L2Value, 2))"></TelerikDropDownList>
+            </TelerikFloatingLabel>
+        </div>
+    }
+    @if (!String.IsNullOrEmpty(L2Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 3">
+                <TelerikDropDownList Class="justification" Data="@L3" TextField="Name" ValueField="TaxonomyId" @bind-Value="@L3Value" OnChange="@(() => GetNextLevel(L3Value, 3))"></TelerikDropDownList>
+            </TelerikFloatingLabel>
+        </div>
+    }
+
+    @if (!String.IsNullOrEmpty(L3Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 4">
+                <TelerikDropDownList Class="justification" Data="@L4" TextField="Name" ValueField="TaxonomyId" @bind-Value="@L4Value" OnChange="@(() => GetNextLevel(L4Value, 4))"></TelerikDropDownList>
+            </TelerikFloatingLabel>
+        </div>
+    }
+
+    @if (!String.IsNullOrEmpty(L4Value))
+    {
+        <div>
+            <TelerikFloatingLabel Text="Level 5">
+                <TelerikDropDownList Class="justification" Data="@L5" TextField="Name" ValueField="TaxonomyId" @bind-Value="@L5Value" OnChange="@(() => GetNextLevel(L5Value, 5))"></TelerikDropDownList>
+            </TelerikFloatingLabel>
+        </div>
+    }
+}
+
+
+@code {
+
+    public TelerikComboBox<TaxonomyDdlDTO, string?> TestRef;
+
+}

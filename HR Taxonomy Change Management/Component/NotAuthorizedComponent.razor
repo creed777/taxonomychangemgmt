@@ -1,0 +1,12 @@
+﻿
+@code {
+    [CascadingParameter]
+    public DialogFactory? Dialogs { get; set; }
+    private string Title { get; set; } = string.Empty;
+    private bool ShowConfirmDialog { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Dialogs.AlertAsync("You are not authorized to view this page", "Alert");
+    }
+}

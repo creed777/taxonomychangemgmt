@@ -1,0 +1,63 @@
+
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    margin:0;
+    padding:0 0 0 0;
+    min-width:100%;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: white;
+    position: relative;
+    flex-direction: row;
+}
+
+.menu {
+    display: flex;
+    position: absolute;
+    right: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.login-menu {
+    position: absolute;
+    right: 0;
+}
+
+.login {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding-right:25px;
+}
+
+.border {
+    border: thin solid black;
+    padding: 1em 0 3em 0;
+    background-color: #0078d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.changePeriod {
+    display:flex; 
+    color:#E0181A; 
+    font-size:24px;
+}

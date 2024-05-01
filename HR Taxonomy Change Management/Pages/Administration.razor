@@ -1,0 +1,118 @@
+﻿@page "/admin"
+@using HR_Taxonomy_Change_Management.Component
+@using HR_Taxonomy_Change_Management.Domain.Model;
+@inject IJSRuntime JSRuntime
+
+<style>
+    .myCustomClass {
+        visibility: hidden;
+    }
+
+    .CloseButton {
+        margin-right: 20px;
+    }
+
+    .justification.k-input,
+    .k-textarea, .k-dropdownlist {
+        width: 500px;
+    }
+
+    .k-textbox {
+        width:250px;
+    }
+
+    .k-floating-label-container{
+        margin-left: 20px;
+    }
+</style>
+
+<title>Admin</title>
+
+<TelerikCard>
+    <span class="ms-subsection-header">Change Period Management</span>
+    <div class="ms-section">
+        <TelerikGrid Data="ChangePeriods"
+                    @ref="AdminGrid"
+                    Navigable = "true"
+                     OnUpdate="UpdateHandler"
+                     OnDelete="DeleteHandler"
+                     OnAdd="AddHandler"
+                     OnCreate="CreateHandler"
+                     Resizable="true"
+                     Sortable="true"
+                     EditMode="GridEditMode.Inline"
+                     OnStateInit="@((GridStateEventArgs<ChangePeriodDTO> args) => InitGridState(args))">
+            <GridToolBarTemplate>
+                <div style="display: flex; flex-direction:row; justify-content:flex-start; align-items:center; width:50%">
+                    <GridCommandButton Class="CloseButton" Enabled=EnableCloseButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="ClosePeriod">Close Period</GridCommandButton>
+                    <GridCommandButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Command="Add">Add Period</GridCommandButton>
+                    <span style="margin:20px">
+                        <TelerikCheckBox Id="chkChangePeriod" @bind-Value=@includePast OnChange="GetAllChangePeriods" />
+                        <label for="chkChangePeriod"> Include Past Periods </label>
+                    </span>
+                </div>
+            </GridToolBarTemplate>
+            <GridColumns>
+                <GridColumn Width="3%" Field="ChangePeriodId" Title="Id" Editable="false" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+                <GridColumn Width="10%" Field="StartDate" Title="Start Date" DisplayFormat="{0:MMM dd yyyy}" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+                <GridColumn Width="10%" Field="EndDate" Title="End Date" DisplayFormat="{0:MMM dd yyyy}" Sortable=true OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+                <GridColumn Field="CreateUser" Title="Created By" Editable="false" Sortable=true OnCellRender="@((GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell")" />
+                <GridColumn Width="10%" Field="CreateDate" Title="Created On" Editable="false" DisplayFormat="{0:MMM dd yyyy}" Sortable=true OnCellRender="@((GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell")" />
+                <GridColumn Field="ModifyUser" Title="Last Modified By" Editable="false" Sortable=true OnCellRender="@((GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell")" />
+                <GridColumn Width="10%" Field="ModifyDate" Title="Last Modified on" Editable="false" DisplayFormat="{0:MMM dd yyyy}" Sortable=true OnCellRender="@((GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell")" />
+                <GridColumn Field="IsDeleted" Title="IsDeleted" Visible="false" />
+                <GridCommandColumn OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+                    <GridCommandButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Command="Save" Icon="@FontIcon.Save" ShowInEdit="true">Update</GridCommandButton>
+                    <GridCommandButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Command="Edit" Icon="@FontIcon.Pencil">Edit</GridCommandButton>
+                    <GridCommandButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Command="Delete" Icon="@FontIcon.Trash">Delete</GridCommandButton>
+                    <GridCommandButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Command="Cancel" Icon="@FontIcon.Cancel" ShowInEdit="true">Cancel</GridCommandButton>
+                </GridCommandColumn>
+            </GridColumns>
+        </TelerikGrid>
+    </div>
+
+    <span class="ms-subsection-header">Close Period Report Management</span>
+    <div class="ms-section">
+        <div class="ms-form-row">
+            <TelerikFloatingLabel Class="ms-input" Text="Change Period">
+                <TelerikDropDownList Width="125px" Size="sm" Data="AllChangePeriods" TextField="ChangePeriodId" ValueField="ChangePeriodId" @bind-Value="selectedChangeId">
+                    <DropDownListSettings>
+                        <DropDownListPopupSettings Height="auto" />
+                    </DropDownListSettings>
+                </TelerikDropDownList>
+            </TelerikFloatingLabel>
+        </div>
+        <div>
+            <TelerikButton OnClick="(async => GetSpreadsheet(selectedChangeId))" Enabled="selectedChangeId != 0">Download Report</TelerikButton>
+            <TelerikButton OnClick="(async => GetSpreadsheet(selectedChangeId))" Enabled="selectedChangeId != 0">Email Report</TelerikButton>
+        </div>
+    </div>
+
+</TelerikCard>
+
+<Spinner LoaderVisible = "LoaderVisible"></Spinner>
+
+
+<NotificationComponent @ref=Notification></NotificationComponent>
+
+<TelerikDialog @bind-Visible="@ShowCloseDialog"
+               Width="500px"
+               ShowCloseButton="true"
+               ThemeColor="fluent">
+    <DialogTitle>Period Close</DialogTitle>
+    <DialogContent>
+
+        @AddText <br />
+        @MoveText <br />
+        @RenameText <br />
+        @DialogText <br />
+
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => {ShowCloseDialog = false;})">Ok</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+@code {
+
+}

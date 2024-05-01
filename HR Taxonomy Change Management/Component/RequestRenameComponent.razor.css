@@ -1,0 +1,17 @@
+﻿.ddl {
+    margin-right: 24px;
+}
+
+.center-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.full-width{
+    width:100% !important
+}
+
+.container{
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}

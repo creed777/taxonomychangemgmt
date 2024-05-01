@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Identity;
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager? NavManager
+
+<AuthorizeView>
+    <Authorized>
+        <p style="color:white; margin-bottom:0;">
+        Hello, @shortName
+        </p>
+    </Authorized>
+    <NotAuthorized>
+        <a href="MicrosoftIdentity/Account/SignIn">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    [Inject] HR_Taxonomy_Change_Management.Misc.IAuthorizationService? AuthService { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string shortName { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        var authState = AuthStateProvider.GetAuthenticationStateAsync().Result;
+        var user = authState.User;
+
+        if (authState.User != null)
+        {
+            UserName = authState.User.Claims.First(c => c.Type == "name").Value;
+            shortName = UserName.Remove(UserName.IndexOf("("));
+        }
+    }
+}
